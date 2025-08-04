@@ -1,0 +1,102 @@
+class Category:
+    def __init__(self, name):
+        self.ledger = []
+        self.name = name
+    
+    def deposit(self, amount, description = ''):
+        obj = {'amount': amount, 'description': description}
+        self.ledger.append(obj)
+    
+    def withdraw(self, amount, description = ''):
+        if self.check_funds(amount):
+            obj = {'amount': - amount, 'description': description}
+            self.ledger.append(obj)
+            return True
+        else:
+            return False
+
+    def get_balance(self):
+        budget = 0
+        for dic in self.ledger:
+            budget += dic['amount']
+        return budget
+    
+    def transfer(self, amount, alt_cat):
+        if not self.check_funds(amount):
+            return False
+        else: 
+            self.withdraw(amount, f'Transfer to {alt_cat.name}')
+            alt_cat.deposit(amount, f'Transfer from {self.name}')
+            return True
+
+    def check_funds(self, amount):
+        budget = 0
+        for dic in self.ledger:
+            budget += dic['amount']
+        if amount > budget:
+            return False
+        else: 
+            return True
+    
+    def __str__(self):
+        title = self.name.center(30, "*") + "\n"
+        ledger_lines = ""
+
+        for item in self.ledger:
+            description = item["description"][:23]
+            amount = f"{item['amount']:.2f}".rjust(30 - len(description))
+            ledger_lines += f"{description}{amount}\n"
+
+        total = f"Total: {self.get_balance():.2f}"
+
+        return title + ledger_lines + total
+        
+
+def create_spend_chart(categories):
+    total = 0
+    category_spend = []
+    for category in categories: 
+        to_add = sum([entry['amount'] for entry in category.ledger if entry['amount'] < 0])
+        category_spend.append(to_add)
+        total += to_add
+    
+    percents_unrounded = [((spent / total) * 100) for spent in category_spend]
+    percents = [int(percents // 10) * 10 for percents in percents_unrounded]
+
+    title = 'Percentage spent by category\n'
+
+    y_axis = range(100, -1, -10)
+
+    max_p = max(percents)
+
+    chart = ''
+    for y in y_axis: 
+        line = f'{str(y).rjust(3)}|'
+        for p in percents:
+            if p >= y:
+                line += ' o '
+            else:
+                line += '   '
+        chart += line + ' \n'
+
+    dash_line = '    ' + ('-' * (3 * len(categories) + 1)) + '\n'
+    
+    longest_name = max(len(category.name) for category in categories)
+
+    x_axis_names_vert = []
+
+    for i in range(0, longest_name):
+        ith_line = []
+        for category in categories:
+            if i < len(category.name):
+                ith_line.append(category.name[i])
+            else: 
+                ith_line.append(' ')
+        printable = '     ' + '  '.join(ith_line) + '  '
+        x_axis_names_vert.append(printable)
+    
+    x_axis = '\n'.join(x_axis_names_vert)
+
+    final_plot = title + chart + dash_line + x_axis
+
+    return final_plot
