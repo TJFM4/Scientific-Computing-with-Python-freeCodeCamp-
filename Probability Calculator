@@ -1,0 +1,47 @@
+import copy
+import random
+
+class Hat():
+    def __init__(self, **kwargs):
+        self.contents = []
+        for color, value in kwargs.items():
+            color_strip = [color] * value
+            self.contents.extend(color_strip)
+    
+    def draw(self, number):
+        if number > len(self.contents):
+            removed_balls = self.contents[:]
+            self.contents = []
+            return removed_balls
+        else:
+            removed_balls = []
+            for n in range(number):
+                removed = random.choice(self.contents)
+                self.contents.remove(removed)
+                removed_balls.append(removed)
+            return removed_balls
+
+def experiment(hat, expected_balls, num_balls_drawn, num_experiments):
+    M = 0
+    for _ in range(num_experiments):
+        verity = []
+        chapeau = copy.deepcopy(hat)
+        removed_balls = chapeau.draw(num_balls_drawn)
+        for key, value in expected_balls.items():
+            if value <= removed_balls.count(key):
+                verity.append(True)
+            else:
+                verity.append(False)
+        if all(verity):
+            M += 1
+    probability = M / num_experiments
+    return probability
+
+hat = Hat(black=6, red=4, green=3)
+probability = experiment(hat=hat,
+                  expected_balls={'red':2,'green':1},
+                  num_balls_drawn=5,
+                  num_experiments=2000)
+
+print(probability)
+print(hat.draw(20))
