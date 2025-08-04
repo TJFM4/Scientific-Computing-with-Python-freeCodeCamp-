@@ -1,0 +1,100 @@
+#Function to identify errors in individual equations
+def errors(equ):
+    error_types = []
+    state_error_individual = False
+    allowable_char = '0123456789-+ '
+    if '*' in equ or '/' in equ:
+        error_types.append(1)
+        state_error_individual = True
+    else:
+        pass
+    for char in equ:
+        if char not in allowable_char:
+            error_types.append(2)
+            state_error_individual = True
+
+    space_1 = equ.find(' ')
+    space_2 = space_1 + 2
+
+    num1 = equ[:space_1]
+
+    num2 = equ[(space_2 + 1):]
+
+    if len(num1) > 4 or len(num2) > 4:
+        error_types.append(3)
+        state_error_individual = True
+        
+    return state_error_individual, error_types
+
+#Function to identify errors with the whole problem set
+def overall_errors(problems):
+    state_error_overall = False
+    if len(problems) > 5:
+        state_error_overall = True
+    return state_error_overall
+
+def arithmetic_arranger(problems, show_answers=False):
+    #Initialise lists for later
+    line_1_list = []
+    line_2_list = []
+    line_3_list = []
+    line_4_list = []
+    
+    #All possible errors
+    state_error_overall = overall_errors(problems)
+    if state_error_overall == True:
+        return 'Error: Too many problems.'
+    elif state_error_overall == False:
+        for equ in problems: 
+            state_error_individual, error_types = errors(equ)
+            if state_error_individual == True:
+                for error in error_types:
+                    if error == 1:
+                        return "Error: Operator must be '+' or '-'."
+                    elif error == 2:
+                        return 'Error: Numbers must only contain digits.'
+                    elif error == 3:
+                        return 'Error: Numbers cannot be more than four digits.'
+            
+            #If there are no errrors, then proceed:
+            elif state_error_individual == False:
+                
+                #Find numbers, operand, and spaces
+                space_1 = equ.find(' ')
+                op = equ[space_1 + 1]
+                space_2 = space_1 + 2
+
+                num1 = equ[:space_1]
+
+                num2 = equ[(space_2 + 1):]
+
+                if op == '+':
+                    sum_of_nums = int(num1) + int(num2)
+                elif op == '-':
+                    sum_of_nums = int(num1) - int(num2)
+
+                total_length_of_equation = max(len(num1), len(num2)) + 2
+                spaces_1 = ' ' * (total_length_of_equation - len(num1))
+                extra_spaces_2 = ' ' * (total_length_of_equation - len(num2) - 2)
+                
+                #Concatenate lines for each equation, putting them in corresponding lists
+                line_1_list.append(spaces_1 + num1)
+                line_2_list.append(op + ' ' + extra_spaces_2 + num2)
+                line_3_list.append('-' * total_length_of_equation)
+                line_4_list.append(' ' * (total_length_of_equation - len(str(sum_of_nums))) + str(sum_of_nums))
+        
+            line_1 = '    '.join(line_1_list)
+            line_2 = '    '.join(line_2_list)
+            line_3 = '    '.join(line_3_list)
+            line_4 = None
+
+            to_print = line_1 + '\n' + line_2 + '\n' + line_3
+
+            if show_answers:
+                line_4 = '    '.join(line_4_list)
+                to_print = line_1 + '\n' + line_2 + '\n' + line_3 + '\n' + line_4
+
+        return to_print
+
+
+print(f'\n{arithmetic_arranger(["32 - 698", "1 - 3801", "45 + 43", "123 + 49", "988 + 40"], True)}')
