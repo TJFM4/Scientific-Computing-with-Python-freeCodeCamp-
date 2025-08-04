@@ -1,0 +1,85 @@
+def get_hour_and_minutes(time):
+    separation_index = time.find(':')
+    hour = time[:separation_index]
+    minutes = time[(separation_index + 1):(separation_index + 3)]
+    return hour, minutes
+
+def day_of_week(added_days, start_day):
+    week = {1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday', 6: 'Saturday', 7: 'Sunday'}
+    if added_days > 0: 
+        total_days = added_days + [key for key, value in week.items() if value == start_day].pop()
+        if total_days > 7:
+            day_num = total_days % 7
+        else:
+            day_num = total_days
+        final_day = week[day_num]
+    else: 
+        final_day = start_day
+    return final_day
+
+
+def add_time(start, duration, text_day = None):
+    start_hour, start_min = get_hour_and_minutes(start)
+    duration_hour, duration_min = get_hour_and_minutes(duration)
+    start_day = start[-2:]
+
+    if start_day == 'PM':
+        hour_sum = int(start_hour) + int(duration_hour) + 12
+    else: 
+        hour_sum = int(start_hour) + int(duration_hour)
+
+    minute_sum = int(start_min) + int(duration_min)
+
+    if minute_sum >= 60:
+        minutes_red = minute_sum % 60
+        hour_sum += 1
+    else:
+        minutes_red = minute_sum
+
+    if minutes_red < 10:
+        minutes_fin = f'0{minutes_red}'
+    else: 
+        minutes_fin = minutes_red
+    
+    add_day = 0
+    if hour_sum >= 24:
+        add_day += (hour_sum - (hour_sum % 24)) / 24
+        add_day = int(add_day)
+        final_hour = hour_sum % 24
+    else:
+        final_hour = hour_sum
+
+    if final_hour > 12:
+        hour = final_hour % 12
+        time_of_day = 'PM'
+    elif final_hour == 0:
+        hour = 12
+        time_of_day = 'AM'
+    elif final_hour == 12:
+        hour = final_hour
+        time_of_day = 'PM'
+    elif final_hour < 12:
+        hour = final_hour
+        time_of_day = 'AM'
+    
+    if text_day == None: 
+        if add_day == 0:
+            new_time = f'{hour}:{minutes_fin} {time_of_day}'
+        elif add_day == 1:
+            new_time = f'{hour}:{minutes_fin} {time_of_day} (next day)'
+        elif add_day > 1: 
+            new_time = f'{hour}:{minutes_fin} {time_of_day} ({add_day} days later)'
+    else:
+        lower_day = text_day.lower()
+        input_day = lower_day[0].upper() + lower_day[1:]
+        day = day_of_week(add_day, input_day)
+        if add_day == 0:
+            new_time = f'{hour}:{minutes_fin} {time_of_day}, {day}'
+        elif add_day == 1:
+            new_time = f'{hour}:{minutes_fin} {time_of_day}, {day} (next day)'
+        else:
+            new_time = f'{hour}:{minutes_fin} {time_of_day}, {day} ({add_day} days later)'
+
+    return new_time
+
+print(add_time('2:59 AM', '24:00', 'saturDay'))
